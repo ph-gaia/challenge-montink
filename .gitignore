@@ -1,0 +1,6 @@
+.env
+www/vendor
+composer.lock
+
+docker/mariadb/data/mysql/*
+docker/mariadb/logs/mysql/*

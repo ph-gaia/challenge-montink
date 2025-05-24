@@ -1,0 +1,22 @@
+{
+    "name": "ph-gaia/challenge-montink",
+    "description": "challenge backend PHP - Montink",
+    "authors": [
+        {
+            "name": "Paulo Henrique",
+            "email": "phenriquegaia@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^10"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --bootstrap vendor/autoload.php App/Test"
+    },
+    "autoload": {
+        "psr-4": {
+            "Core\\" : "core/",
+            "App\\" : "./App/"
+        }
+    }
+}

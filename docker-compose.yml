@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  php:
+    build: 
+      context: './docker/php/'
+      dockerfile: Dockerfile
+    container_name: montink-app
+    networks:
+      - backend
+    volumes:
+      - ./www/:/var/www/html/:delegated
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+      - PHP_MAX_EXECUTION_TIME=30
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  webserver:
+    image: nginx:1.25-alpine
+    container_name: montink-webserver
+    depends_on:
+      php:
+        condition: service_healthy
+    networks:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./www/:/var/www/html/:delegated
+      - ./docker/nginx/conf.d_local:/etc/nginx/conf.d:ro
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  mysql:
+    image: mariadb:10.11
+    container_name: 'montink-db'
+    networks:
+      - backend
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mariadb/data/mysql:/var/lib/mysql:delegated
+      - ./docker/mariadb/logs/mysql:/var/log/mysql:delegated
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-montink}
+      MYSQL_USER: ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-root}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+networks:
+  backend:
+    driver: bridge
