@@ -59,7 +59,7 @@ Foi criado um assistente para aplicação *setup.php*.
 
 Para criar todas as tabelas do banco de dados, você pode executar o seguinte comando:
 ```shell
-$ php setup.php
+$ docker exec -it montink-app php setup.php
 ```
 
 ### Executando os Testes
